@@ -1,13 +1,24 @@
 #include "game.h"
 #include <iostream>
+#include <fstream>
 #include "SDL.h"
 
 Game::Game(std::size_t grid_width, std::size_t grid_height)
     : snake(grid_width, grid_height),
       engine(dev()),
-      random_w(0, static_cast<int>(grid_width)),
-      random_h(0, static_cast<int>(grid_height)) {
+      random_w(0, static_cast<int>(grid_width-1)),
+      random_h(0, static_cast<int>(grid_height-1)) {
+  //Reading high score from hs.txt (stores the highest score so far)
+  std::ifstream input("hs.txt");
+  std::string tempScore="";
+  input>>tempScore;
+  if(tempScore=="")
+    highScore=0;
+  else
+    highScore = std::stoi(tempScore);
+  input.close();
   PlaceFood();
+
 }
 
 void Game::Run(Controller const &controller, Renderer &renderer,
@@ -20,6 +31,7 @@ void Game::Run(Controller const &controller, Renderer &renderer,
   bool running = true;
 
   while (running) {
+
     frame_start = SDL_GetTicks();
 
     // Input, Update, Render - the main game loop.
@@ -36,9 +48,14 @@ void Game::Run(Controller const &controller, Renderer &renderer,
 
     // After every second, update the window title.
     if (frame_end - title_timestamp >= 1000) {
-      renderer.UpdateWindowTitle(score, frame_count);
+      renderer.UpdateWindowTitle(score, frame_count, highScore);
       frame_count = 0;
       title_timestamp = frame_end;
+
+      //pushing the highScore to the hs.txt file
+      std::ofstream output("hs.txt");
+      output<<highScore;
+      output.close();
     }
 
     // If the time for this frame is too small (i.e. frame_duration is
@@ -58,6 +75,7 @@ void Game::PlaceFood() {
     // Check that the location is not occupied by a snake item before placing
     // food.
     if (!snake.SnakeCell(x, y)) {
+      points = (Game::counter!=0 && Game::counter%5==0)?5:1; //setting the points as per the food
       food.x = x;
       food.y = y;
       return;
@@ -75,7 +93,10 @@ void Game::Update() {
 
   // Check if there's food over here
   if (food.x == new_x && food.y == new_y) {
-    score++;
+    score+=points;
+    if(score>highScore) //updating highscore
+      highScore=score; 
+    Game::counter++;
     PlaceFood();
     // Grow snake and increase speed.
     snake.GrowBody();
@@ -84,4 +105,5 @@ void Game::Update() {
 }
 
 int Game::GetScore() const { return score; }
+int Game::GetHighScore() const { return highScore; }
 int Game::GetSize() const { return snake.size; }

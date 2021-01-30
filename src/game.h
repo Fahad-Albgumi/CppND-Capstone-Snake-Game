@@ -14,10 +14,14 @@ class Game {
            std::size_t target_frame_duration);
   int GetScore() const;
   int GetSize() const;
+  int GetHighScore() const;
+  static int counter;
+  int points;
 
  private:
   Snake snake;
   SDL_Point food;
+  
 
   std::random_device dev;
   std::mt19937 engine;
@@ -25,6 +29,7 @@ class Game {
   std::uniform_int_distribution<int> random_h;
 
   int score{0};
+  int highScore;
 
   void PlaceFood();
   void Update();

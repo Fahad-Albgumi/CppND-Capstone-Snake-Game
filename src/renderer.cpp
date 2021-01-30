@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "game.h"
 #include <iostream>
 #include <string>
 
@@ -48,9 +49,14 @@ void Renderer::Render(Snake const snake, SDL_Point const &food) {
   SDL_RenderClear(sdl_renderer);
 
   // Render food
-  SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0xCC, 0x00, 0xFF);
+  
+  if(Game::counter !=0 && Game::counter%5 == 0) //rendering special food
+    SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0xC0, 0xCB, 0xFF); 
+  else //rendering normal food
+    SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0xCC, 0x00, 0xFF);
   block.x = food.x * block.w;
   block.y = food.y * block.h;
+  SDL_RenderFillRect(sdl_renderer, &block);
   SDL_RenderFillRect(sdl_renderer, &block);
 
   // Render snake's body
@@ -75,7 +81,7 @@ void Renderer::Render(Snake const snake, SDL_Point const &food) {
   SDL_RenderPresent(sdl_renderer);
 }
 
-void Renderer::UpdateWindowTitle(int score, int fps) {
-  std::string title{"Snake Score: " + std::to_string(score) + " FPS: " + std::to_string(fps)};
+void Renderer::UpdateWindowTitle(int score, int fps, int highScore) {
+  std::string title{"Snake Score: " + std::to_string(score) + " FPS: " + std::to_string(fps) + " High Score: " + std::to_string(highScore)};
   SDL_SetWindowTitle(sdl_window, title.c_str());
 }
